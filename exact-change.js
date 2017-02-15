@@ -1,4 +1,4 @@
-var CashRegister = function(cid) {
+let CashRegister = function(cid) {
   let cashInDrawer = {};
   
   this.setCashInDrawer = (cid) => {
