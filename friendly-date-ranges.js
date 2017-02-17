@@ -1,49 +1,75 @@
-/*
-
-Convert a date range consisting of two dates formatted as YYYY-MM-DD into a more readable format.
-
-The friendly display should use month names instead of numbers and ordinal dates instead of cardinal (1st instead of 1).
-
-Do not display information that is redundant or that can be inferred by the user: 
-	if the date range ends in less than a year from when it begins, do not display the ending year.
-
-Additionally, if the date range begins in the current year (i.e. it is currently the year 2016) and ends within one year, 
-	the year should not be displayed at the beginning of the friendly range.
-
-If the range ends in the same month that it begins, do not display the ending year or month.
-
-Examples:
-
-makeFriendlyDates(["2016-07-01", "2016-07-04"]) should return ["July 1st","4th"]
-
-makeFriendlyDates(["2016-07-01", "2018-07-04"]) should return ["July 1st, 2016", "July 4th, 2018"].
-
-makeFriendlyDates(["2016-12-01", "2017-02-03"]) should return ["December 1st","February 3rd"].
-
-makeFriendlyDates(["2016-12-01", "2018-02-03"]) should return ["December 1st, 2016","February 3rd, 2018"].
-
-makeFriendlyDates(["2017-03-01", "2017-05-05"]) should return ["March 1st, 2017","May 5th"]
-
-makeFriendlyDates(["2018-01-13", "2018-01-13"]) should return ["January 13th, 2018"].
-
-makeFriendlyDates(["2022-09-05", "2023-09-04"]) should return ["September 5th, 2022","September 4th"].
-
-makeFriendlyDates(["2022-09-05", "2023-09-05"]) should return ["September 5th, 2022","September 5th, 2023"].
-
-*/
-
-function makeFriendlyDates(arr) {
-  let differentYear = false;
-  let differentMonth = false;
-  let from, to;
-  [from, to] = arr;
-
-  let date = new Date(from),
-    locale = "en-us",
-    month = date.toLocaleString(locale, { month: "long" });
-
-
-  // if ()
+function ordinal(d) {
+	var s = ["th","st","nd","rd"],
+  v = d % 100;
+  return d+(s[(v-20)%10]||s[v]||s[0]);
 }
 
-makeFriendlyDates(['2016-07-01', '2016-07-04']);
+function dateDifferenceInDays(date1, date2) {
+	return Math.floor((date2 - date1) / (1000*60*60*24));
+}
+
+function dateDifferenceIsAYearOrMore(date1, date2) {
+	return dateDifferenceInDays(date1, date2) >= 365;
+}
+
+function datesHaveTheSameMonth(date1, date2) {
+	return date1.getMonth() === date2.getMonth();
+}
+
+function datesHaveTheSameYear(date1, date2) {
+	return date1.getFullYear() === date2.getFullYear();
+}
+
+function datesAreEqual(date1, date2) {
+	if (date1.getDate() !== date2.getDate()) {
+		return false;
+	}
+
+	if (date1.getMonth() !== date2.getMonth()) {
+		return false;
+	}
+
+	if (date1.getFullYear() !== date2.getFullYear()) {
+		return false;
+	}
+
+	return true;
+}
+
+function makeFriendlyDates(arr) {
+  const dateArr = arr.map(dateStr => new Date(dateStr));
+  const locale = "en-uk";
+  const currentYear = 2016; // (new Date().getFullYear())
+  let from, to;
+  [from, to] = dateArr;
+
+  if (datesAreEqual(from, to)) {
+  	return [`${from.toLocaleString(locale, { month: "long" })} ${ordinal(from.getDate())}, ${from.getFullYear()}`];
+  }
+
+  if (from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth()) {
+  	return [`${from.toLocaleString(locale, { month: "long" })} ${ordinal(from.getDate())}`, `${ordinal(to.getDate())}`];
+  }
+
+  if (from.getFullYear() === currentYear && !dateDifferenceIsAYearOrMore(from, to)) {
+  	return [
+  		`${from.toLocaleString(locale, { month: "long" })} ${ordinal(from.getDate())}`, 
+  		`${to.toLocaleString(locale, { month: "long" })} ${ordinal(to.getDate())}`
+  	];
+  }
+
+  if (from.getFullYear() !== currentYear && !dateDifferenceIsAYearOrMore(from, to)) {
+  	return [
+  		`${from.toLocaleString(locale, { month: "long" })} ${ordinal(from.getDate())}, ${from.getFullYear()}`, 
+  		`${to.toLocaleString(locale, { month: "long" })} ${ordinal(to.getDate())}`
+  	];
+  }
+
+  if (dateDifferenceIsAYearOrMore(from, to)) {
+  	return [
+  		`${from.toLocaleString(locale, { month: "long" })} ${ordinal(from.getDate())}, ${from.getFullYear()}`, 
+  		`${to.toLocaleString(locale, { month: "long" })} ${ordinal(to.getDate())}, ${to.getFullYear()}`
+  	];
+  }
+
+}
